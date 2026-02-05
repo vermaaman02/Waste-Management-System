@@ -1,23 +1,31 @@
 """
-============================================
-Web Based Smart Waste Management System
-for Municipal Services
-============================================
-BCA Major Project - Flask Backend
-============================================
-This file contains the main Flask application
-that handles all routes and database operations.
-============================================
+╔══════════════════════════════════════════════════════════════╗
+║     WEB BASED SMART WASTE MANAGEMENT SYSTEM                  ║
+║     FOR MUNICIPAL SERVICES                                   ║
+╠══════════════════════════════════════════════════════════════╣
+║  Project Type  : BCA Major Project                           ║
+║  Developer     : Aman Verma                                  ║
+║  College       : [Your College Name]                         ║
+║  Session       : 2024-2025                                   ║
+║  Guide         : [Your Guide Name]                           ║
+╠══════════════════════════════════════════════════════════════╣
+║  Technology Stack:                                           ║
+║  - Backend    : Python Flask Framework                       ║
+║  - Database   : MySQL (via MySQL Workbench)                  ║
+║  - Frontend   : HTML5, CSS3 , JavaScript                      ║
+║  - Templates  : Jinja2                                       ║
+║  - API        : REST JSON APIs for Mobile App                ║
+╚══════════════════════════════════════════════════════════════╝
 """
 
 # ============================================
 # IMPORT REQUIRED LIBRARIES
 # ============================================
-from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, session
 import mysql.connector  # Library to connect Python with MySQL database
 import os  # For file and folder operations
 from werkzeug.utils import secure_filename  # For secure file uploads
-import time  # For generating unique filenames
+from functools import wraps  # For creating login decorator
 
 # ============================================
 # FLASK APP CONFIGURATION
@@ -41,22 +49,41 @@ if not os.path.exists(UPLOAD_FOLDER):
 # ============================================
 # DATABASE CONFIGURATION
 # ============================================
-# MySQL connection settings - Uses Railway environment variables if available
-# Falls back to local settings for development
-def get_db_config():
-    """Return database configuration (called at runtime, not build time)"""
-    return {
-        'host': os.environ.get('MYSQLHOST', 'localhost'),
-        'user': os.environ.get('MYSQLUSER', 'root'),
-        'password': os.environ.get('MYSQLPASSWORD', 'aman'),
-        'database': os.environ.get('MYSQLDATABASE', 'waste_management'),
-        'port': int(os.environ.get('MYSQLPORT', '3306'))
-    }   
+# MySQL Workbench connection settings
+DB_CONFIG = {
+    'host': 'localhost',      # Database server (local machine)
+    'user': 'root',           # MySQL username
+    'password': 'aman',       # MySQL password
+    'database': 'waste_management'  # Database name
+}
+
+# ============================================
+# ADMIN CREDENTIALS (For Municipality Login)
+# ============================================
+# In production, these should be stored securely in database
+ADMIN_CREDENTIALS = {
+    'username': 'admin',
+    'password': 'admin123'
+}
 
 
 # ============================================
 # HELPER FUNCTIONS
 # ============================================
+
+def login_required(f):
+    """
+    Decorator function to protect admin routes.
+    Redirects to login page if user is not authenticated.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'admin_logged_in' not in session:
+            flash('Please login to access the dashboard.', 'error')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 
 def init_database():
     """
@@ -66,17 +93,15 @@ def init_database():
     try:
         # First connect without database to create it
         conn = mysql.connector.connect(
-            host=os.environ.get('MYSQLHOST', 'localhost'),
-            user=os.environ.get('MYSQLUSER', 'root'),
-            password=os.environ.get('MYSQLPASSWORD', 'aman'),
-            port=int(os.environ.get('MYSQLPORT', 3306))
+            host='localhost',
+            user='root',
+            password='aman'
         )
         cursor = conn.cursor()
         
-        # Create database if not exists (Railway creates DB automatically)
-        db_name = os.environ.get('MYSQLDATABASE', 'waste_management')
-        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db_name}")
-        cursor.execute(f"USE {db_name}")
+        # Create database if not exists
+        cursor.execute("CREATE DATABASE IF NOT EXISTS waste_management")
+        cursor.execute("USE waste_management")
         
         # Create complaints table if not exists
         cursor.execute("""
@@ -109,7 +134,7 @@ def get_db_connection():
     This function is called whenever we need to interact with MySQL.
     """
     try:
-        connection = mysql.connector.connect(**get_db_config())
+        connection = mysql.connector.connect(**DB_CONFIG)
         return connection
     except mysql.connector.Error as err:
         print(f"Database Connection Error: {err}")
@@ -125,20 +150,6 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-# Flag to track if database is initialized
-_db_initialized = False
-
-def ensure_db_initialized():
-    """Initialize database on first use (not during build)"""
-    global _db_initialized
-    if not _db_initialized:
-        try:
-            init_database()
-            _db_initialized = True
-        except Exception as e:
-            print(f"Database init error: {e}")
-
-
 # ============================================
 # ROUTE 1: HOME PAGE - User Complaint Form
 # ============================================
@@ -148,8 +159,48 @@ def index():
     Display the garbage reporting page for citizens.
     Users can submit complaints about garbage through this page.
     """
-    ensure_db_initialized()
     return render_template('report.html')
+
+
+# ============================================
+# ROUTE: ADMIN LOGIN PAGE
+# ============================================
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """
+    Admin login page for municipality staff.
+    GET: Display login form
+    POST: Validate credentials and create session
+    """
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        # Validate credentials
+        if username == ADMIN_CREDENTIALS['username'] and password == ADMIN_CREDENTIALS['password']:
+            session['admin_logged_in'] = True
+            session['admin_username'] = username
+            flash('Login successful! Welcome to the dashboard.', 'success')
+            return redirect(url_for('admin'))
+        else:
+            flash('Invalid username or password!', 'error')
+            return redirect(url_for('login'))
+    
+    return render_template('login.html')
+
+
+# ============================================
+# ROUTE: ADMIN LOGOUT
+# ============================================
+@app.route('/logout')
+def logout():
+    """
+    Logout admin and clear session.
+    Redirects to login page after logout.
+    """
+    session.clear()
+    flash('You have been logged out successfully.', 'success')
+    return redirect(url_for('login'))
 
 
 # ============================================
@@ -226,13 +277,14 @@ def submit_complaint():
 # ROUTE 3: ADMIN DASHBOARD
 # ============================================
 @app.route('/admin')
+@login_required  # Protect this route - requires login
 def admin():
     """
     Display the municipality dashboard.
     Shows all complaints with images, location, and status.
     Municipality staff can update complaint status from here.
+    PROTECTED: Requires admin login to access.
     """
-    ensure_db_initialized()
     try:
         connection = get_db_connection()
         if connection is None:
@@ -244,10 +296,22 @@ def admin():
         cursor.execute("SELECT * FROM complaints ORDER BY created_at DESC")
         complaints = cursor.fetchall()
         
+        # Get statistics for dashboard
+        cursor.execute("SELECT COUNT(*) as total FROM complaints")
+        total = cursor.fetchone()['total']
+        
+        cursor.execute("SELECT COUNT(*) as pending FROM complaints WHERE status='Pending'")
+        pending = cursor.fetchone()['pending']
+        
+        cursor.execute("SELECT COUNT(*) as cleaned FROM complaints WHERE status='Cleaned'")
+        cleaned = cursor.fetchone()['cleaned']
+        
+        stats = {'total': total, 'pending': pending, 'cleaned': cleaned}
+        
         cursor.close()
         connection.close()
         
-        return render_template('admin.html', complaints=complaints)
+        return render_template('admin.html', complaints=complaints, stats=stats)
         
     except mysql.connector.Error as err:
         print(f"Database Error: {err}")
@@ -303,6 +367,51 @@ def update_status():
         if request.is_json:
             return jsonify({'success': False, 'message': str(err)}), 500
         flash('Error updating status.', 'error')
+        return redirect(url_for('admin'))
+
+
+# ============================================
+# ROUTE: DELETE COMPLAINT
+# ============================================
+@app.route('/delete_complaint/<int:complaint_id>', methods=['POST'])
+@login_required
+def delete_complaint(complaint_id):
+    """
+    Delete a complaint from the database.
+    Also deletes the associated image file.
+    PROTECTED: Requires admin login.
+    """
+    try:
+        connection = get_db_connection()
+        if connection is None:
+            flash('Database connection failed!', 'error')
+            return redirect(url_for('admin'))
+        
+        cursor = connection.cursor(dictionary=True)
+        
+        # First, get the image path to delete the file
+        cursor.execute("SELECT image_path FROM complaints WHERE id = %s", (complaint_id,))
+        complaint = cursor.fetchone()
+        
+        if complaint and complaint['image_path']:
+            # Delete the image file
+            image_file = os.path.join(app.config['UPLOAD_FOLDER'], complaint['image_path'])
+            if os.path.exists(image_file):
+                os.remove(image_file)
+        
+        # Delete from database
+        cursor.execute("DELETE FROM complaints WHERE id = %s", (complaint_id,))
+        connection.commit()
+        
+        cursor.close()
+        connection.close()
+        
+        flash('Complaint deleted successfully!', 'success')
+        return redirect(url_for('admin'))
+        
+    except mysql.connector.Error as err:
+        print(f"Database Error: {err}")
+        flash('Error deleting complaint.', 'error')
         return redirect(url_for('admin'))
 
 
@@ -444,16 +553,14 @@ if __name__ == '__main__':
     print("for Municipal Services")
     print("=" * 50)
     
-    # Initialize database on startup (local development)
+    # Initialize database on startup
+    print("Initializing database...")
     init_database()
     
-    # Get port from environment variable (Railway sets this)
-    port = int(os.environ.get('PORT', 5000))
-    
     print("Server starting...")
-    print(f"User Page: http://localhost:{port}/")
-    print(f"Admin Dashboard: http://localhost:{port}/admin")
-    print(f"API Endpoint: http://localhost:{port}/complaints")
+    print("User Page: http://localhost:5000/")
+    print("Admin Dashboard: http://localhost:5000/admin")
+    print("API Endpoint: http://localhost:5000/complaints")
     print("=" * 50)
     
-    app.run(debug=False, host='0.0.0.0', port=port)
+    app.run(debug=True, host='0.0.0.0', port=5000)

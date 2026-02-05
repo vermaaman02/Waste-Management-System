@@ -19,10 +19,18 @@
 <body>
     <!-- Main Container -->
     <div class="container admin-container">
-        <!-- Header Section -->
+        <!-- Header Section with Logout -->
         <header class="header admin-header">
-            <h1>🏛️ Municipality Dashboard</h1>
-            <p>Smart Waste Management System - Patna Municipal Corporation</p>
+            <div class="header-content">
+                <div>
+                    <h1>🏛️ Municipality Dashboard</h1>
+                    <p>Smart Waste Management System - Patna Municipal Corporation</p>
+                </div>
+                <div class="header-actions">
+                    <span class="admin-welcome">👤 Welcome, Admin</span>
+                    <a href="{{ url_for('logout') }}" class="btn-logout">🚪 Logout</a>
+                </div>
+            </div>
         </header>
 
         <!-- Flash Messages -->
@@ -38,18 +46,24 @@
 
         <!-- Statistics Section -->
         <div class="stats-container">
-            <div class="stat-card">
+            <div class="stat-card total">
                 <h3>📊 Total Complaints</h3>
-                <p class="stat-number">{{ complaints|length }}</p>
+                <p class="stat-number">{{ stats.total if stats else complaints|length }}</p>
             </div>
             <div class="stat-card pending">
                 <h3>⏳ Pending</h3>
-                <p class="stat-number">{{ complaints|selectattr('status', 'equalto', 'Pending')|list|length }}</p>
+                <p class="stat-number">{{ stats.pending if stats else complaints|selectattr('status', 'equalto', 'Pending')|list|length }}</p>
             </div>
             <div class="stat-card cleaned">
                 <h3>✅ Cleaned</h3>
-                <p class="stat-number">{{ complaints|selectattr('status', 'equalto', 'Cleaned')|list|length }}</p>
+                <p class="stat-number">{{ stats.cleaned if stats else complaints|selectattr('status', 'equalto', 'Cleaned')|list|length }}</p>
             </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-bar">
+            <button onclick="window.print()" class="btn-action btn-print">🖨️ Print Report</button>
+            <button onclick="refreshPage()" class="btn-action btn-refresh">🔄 Refresh</button>
         </div>
 
         <!-- Complaints Table Section -->
@@ -68,7 +82,7 @@
                             <th>Image</th>
                             <th>GPS Location</th>
                             <th>Status</th>
-                            <th>Action</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -131,29 +145,31 @@
                             
                             <!-- Action: Update Status -->
                             <td class="td-action">
-                                <!--
-                                Form to update complaint status
-                                Submits to /update_status route
-                                -->
-                                <form action="{{ url_for('update_status') }}" method="POST" class="status-form">
-                                    <!-- Hidden field containing complaint ID -->
-                                    <input type="hidden" name="id" value="{{ complaint.id }}">
+                                <div class="action-buttons">
+                                    <!--
+                                    Form to update complaint status
+                                    Submits to /update_status route
+                                    -->
+                                    <form action="{{ url_for('update_status') }}" method="POST" class="status-form">
+                                        <!-- Hidden field containing complaint ID -->
+                                        <input type="hidden" name="id" value="{{ complaint.id }}">
+                                        
+                                        <!-- Status Dropdown -->
+                                        <select name="status" class="status-select" onchange="this.form.submit()">
+                                            <option value="Pending" {% if complaint.status == 'Pending' %}selected{% endif %}>
+                                                ⏳ Pending
+                                            </option>
+                                            <option value="Cleaned" {% if complaint.status == 'Cleaned' %}selected{% endif %}>
+                                                ✅ Cleaned
+                                            </option>
+                                        </select>
+                                    </form>
                                     
-                                    <!-- Status Dropdown -->
-                                    <select name="status" class="status-select" onchange="this.form.submit()">
-                                        <option value="Pending" {% if complaint.status == 'Pending' %}selected{% endif %}>
-                                            ⏳ Pending
-                                        </option>
-                                        <option value="Cleaned" {% if complaint.status == 'Cleaned' %}selected{% endif %}>
-                                            ✅ Cleaned
-                                        </option>
-                                    </select>
-                                    
-                                    <!-- Alternative: Button to update status -->
-                                    <noscript>
-                                        <button type="submit" class="btn-update">Update</button>
-                                    </noscript>
-                                </form>
+                                    <!-- Delete Button -->
+                                    <form action="{{ url_for('delete_complaint', complaint_id=complaint.id) }}" method="POST" class="delete-form" onsubmit="return confirmDelete()">
+                                        <button type="submit" class="btn-delete" title="Delete Complaint">🗑️</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         <!-- End of Jinja2 loop -->
@@ -205,6 +221,20 @@
         }
 
         /**
+         * Confirm before deleting a complaint
+         */
+        function confirmDelete() {
+            return confirm('⚠️ Are you sure you want to delete this complaint?\nThis action cannot be undone!');
+        }
+
+        /**
+         * Refresh the page
+         */
+        function refreshPage() {
+            location.reload();
+        }
+
+        /**
          * Close modal when Escape key is pressed
          */
         document.addEventListener('keydown', function(e) {
@@ -214,14 +244,6 @@
         });
 
         /**
-         * Auto-refresh page every 30 seconds to show new complaints
-         * (Optional - uncomment to enable)
-         */
-        // setInterval(function() {
-        //     location.reload();
-        // }, 30000);
-
-        /**
          * Confirm before changing status to Cleaned
          */
         document.querySelectorAll('.status-select').forEach(function(select) {
@@ -229,7 +251,6 @@
                 if (this.value === 'Cleaned') {
                     if (!confirm('Mark this complaint as Cleaned?')) {
                         e.preventDefault();
-                        // Reset to Pending if cancelled
                         this.value = 'Pending';
                         return false;
                     }

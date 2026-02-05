@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--
+    ============================================
+    Admin Login Page
+    Web Based Smart Waste Management System
+    ============================================
+    Municipality staff login to access dashboard
+    ============================================
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Smart Waste Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <!-- Logo/Header -->
+        <div class="login-header">
+            <div class="login-logo">🏛️</div>
+            <h1>Municipality Login</h1>
+            <p>Smart Waste Management System</p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Login Form -->
+        <form action="{{ url_for('login') }}" method="POST" class="login-form">
+            <div class="form-group">
+                <label for="username">👤 Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">🔒 Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter password" required>
+            </div>
+
+            <button type="submit" class="btn-login">
+                🔐 Login to Dashboard
+            </button>
+        </form>
+
+        <!-- Footer Links -->
+        <div class="login-footer">
+            <a href="{{ url_for('index') }}">← Back to Report Page</a>
+            <p class="login-hint">
+                <strong>Demo Credentials:</strong><br>
+                Username: admin | Password: admin123
+            </p>
+        </div>
+    </div>
+</body>
+</html>
