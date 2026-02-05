@@ -43,13 +43,15 @@ if not os.path.exists(UPLOAD_FOLDER):
 # ============================================
 # MySQL connection settings - Uses Railway environment variables if available
 # Falls back to local settings for development
-DB_CONFIG = {
-    'host': os.environ.get('MYSQLHOST', 'localhost'),
-    'user': os.environ.get('MYSQLUSER', 'root'),
-    'password': os.environ.get('MYSQLPASSWORD', 'aman'),
-    'database': os.environ.get('MYSQLDATABASE', 'waste_management'),
-    'port': int(os.environ.get('MYSQLPORT', 3306))
-}   
+def get_db_config():
+    """Return database configuration (called at runtime, not build time)"""
+    return {
+        'host': os.environ.get('MYSQLHOST', 'localhost'),
+        'user': os.environ.get('MYSQLUSER', 'root'),
+        'password': os.environ.get('MYSQLPASSWORD', 'aman'),
+        'database': os.environ.get('MYSQLDATABASE', 'waste_management'),
+        'port': int(os.environ.get('MYSQLPORT', '3306'))
+    }   
 
 
 # ============================================
@@ -107,7 +109,7 @@ def get_db_connection():
     This function is called whenever we need to interact with MySQL.
     """
     try:
-        connection = mysql.connector.connect(**DB_CONFIG)
+        connection = mysql.connector.connect(**get_db_config())
         return connection
     except mysql.connector.Error as err:
         print(f"Database Connection Error: {err}")
