@@ -123,6 +123,20 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+# Flag to track if database is initialized
+_db_initialized = False
+
+def ensure_db_initialized():
+    """Initialize database on first use (not during build)"""
+    global _db_initialized
+    if not _db_initialized:
+        try:
+            init_database()
+            _db_initialized = True
+        except Exception as e:
+            print(f"Database init error: {e}")
+
+
 # ============================================
 # ROUTE 1: HOME PAGE - User Complaint Form
 # ============================================
@@ -132,6 +146,7 @@ def index():
     Display the garbage reporting page for citizens.
     Users can submit complaints about garbage through this page.
     """
+    ensure_db_initialized()
     return render_template('report.html')
 
 
@@ -215,6 +230,7 @@ def admin():
     Shows all complaints with images, location, and status.
     Municipality staff can update complaint status from here.
     """
+    ensure_db_initialized()
     try:
         connection = get_db_connection()
         if connection is None:
@@ -415,9 +431,6 @@ def uploaded_file(filename):
 # ============================================
 # MAIN ENTRY POINT
 # ============================================
-# Initialize database when module loads (for Railway/Gunicorn)
-init_database()
-
 if __name__ == '__main__':
     """
     Run the Flask development server.
@@ -428,6 +441,9 @@ if __name__ == '__main__':
     print("Web Based Smart Waste Management System")
     print("for Municipal Services")
     print("=" * 50)
+    
+    # Initialize database on startup (local development)
+    init_database()
     
     # Get port from environment variable (Railway sets this)
     port = int(os.environ.get('PORT', 5000))
