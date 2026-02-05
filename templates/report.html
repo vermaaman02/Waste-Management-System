@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--
+    ============================================
+    Report Garbage - User Page
+    Web Based Smart Waste Management System
+    ============================================
+    This page allows citizens to report garbage
+    complaints with location and image capture.
+    ============================================
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Garbage - Smart Waste Management</title>
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <h1>🗑️ Smart Waste Management System</h1>
+            <p>Municipal Services - Patna</p>
+        </header>
+
+        <!-- Flash Messages (Success/Error notifications) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Complaint Form Section -->
+        <div class="form-container">
+            <h2>📝 Report Garbage</h2>
+            <p class="subtitle">Help us keep Patna clean by reporting garbage issues</p>
+
+            <!-- 
+            Form Configuration:
+            - action: URL to submit form data
+            - method: POST for sending data securely
+            - enctype: multipart/form-data for file uploads
+            -->
+            <form action="{{ url_for('submit_complaint') }}" method="POST" enctype="multipart/form-data" id="complaintForm">
+                
+                <!-- Name Input Field -->
+                <div class="form-group">
+                    <label for="name">👤 Your Name:</label>
+                    <input type="text" id="name" name="name" placeholder="Enter your full name" required>
+                </div>
+
+                <!-- Area Dropdown - Patna Areas -->
+                <div class="form-group">
+                    <label for="area">📍 Select Area:</label>
+                    <select id="area" name="area" required>
+                        <option value="">-- Select Area in Patna --</option>
+                        <option value="Patna Junction">Patna Junction</option>
+                        <option value="Gandhi Maidan">Gandhi Maidan</option>
+                        <option value="Kankarbagh">Kankarbagh</option>
+                        <option value="Boring Road">Boring Road</option>
+                        <option value="Fraser Road">Fraser Road</option>
+                        <option value="Exhibition Road">Exhibition Road</option>
+                        <option value="Ashok Rajpath">Ashok Rajpath</option>
+                        <option value="Bailey Road">Bailey Road</option>
+                        <option value="Danapur">Danapur</option>
+                        <option value="Patliputra Colony">Patliputra Colony</option>
+                        <option value="Rajendra Nagar">Rajendra Nagar</option>
+                        <option value="Kadamkuan">Kadamkuan</option>
+                        <option value="Bankipur">Bankipur</option>
+                        <option value="Anisabad">Anisabad</option>
+                        <option value="Phulwari Sharif">Phulwari Sharif</option>
+                        <option value="Digha">Digha</option>
+                        <option value="Khagaul">Khagaul</option>
+                        <option value="Sampatchak">Sampatchak</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <!-- Description Textarea -->
+                <div class="form-group">
+                    <label for="description">📋 Description:</label>
+                    <textarea id="description" name="description" rows="4" 
+                        placeholder="Describe the garbage issue (e.g., type of waste, hazard level, etc.)" required></textarea>
+                </div>
+
+                <!-- Image Upload Section -->
+                <div class="form-group">
+                    <label>📷 Upload Garbage Image:</label>
+                    
+                    <!-- Image Preview Container -->
+                    <div id="imagePreviewContainer" class="image-preview-container" style="display: none;">
+                        <img id="imagePreview" src="" alt="Preview">
+                        <button type="button" onclick="removeImage()" class="btn-remove">✖ Remove</button>
+                    </div>
+                    
+                    <!-- Camera and Gallery Options -->
+                    <div class="upload-options">
+                        <!-- Camera Capture Button - Opens Live Camera -->
+                        <button type="button" onclick="openLiveCamera()" class="btn-upload btn-camera">
+                            📸 Take Photo (Live Camera)
+                        </button>
+                        
+                        <!-- Gallery Upload Button -->
+                        <button type="button" onclick="openGallery()" class="btn-upload btn-gallery">
+                            🖼️ Choose from Gallery
+                        </button>
+                    </div>
+                    
+                    <!-- Hidden file input for form submission -->
+                    <input type="file" id="cameraInput" name="image" accept="image/*" 
+                        style="display: none;">
+                    
+                    <!-- Hidden file input for gallery selection -->
+                    <input type="file" id="galleryInput" accept="image/*" 
+                        style="display: none;" onchange="previewImage(this)">
+                </div>
+
+                <!-- GPS Location Section -->
+                <div class="form-group">
+                    <label>🌍 GPS Location:</label>
+                    <div class="location-info">
+                        <button type="button" onclick="getLocation()" class="btn-location">
+                            📍 Get My Location
+                        </button>
+                        <div id="locationDisplay" class="location-display">
+                            Location not captured yet
+                        </div>
+                    </div>
+                    <!-- Hidden fields to store GPS coordinates -->
+                    <input type="hidden" id="latitude" name="latitude">
+                    <input type="hidden" id="longitude" name="longitude">
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-group">
+                    <button type="submit" class="btn-submit">
+                        ✅ Submit Complaint
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer with Admin Link -->
+        <footer class="footer">
+            <p>© 2024 Smart Waste Management System - Patna Municipal Corporation</p>
+            <a href="{{ url_for('admin') }}" class="admin-link">🔐 Municipality Dashboard</a>
+        </footer>
+    </div>
+
+    <!-- ============================================
+         LIVE CAMERA MODAL
+         ============================================ -->
+    <div id="cameraModal" class="camera-modal" style="display: none;">
+        <div class="camera-container">
+            <h3>📸 Live Camera</h3>
+            <p>Point your camera at the garbage and click Capture</p>
+            
+            <!-- Live Video Stream -->
+            <video id="cameraVideo" autoplay playsinline></video>
+            
+            <!-- Canvas for capturing (hidden) -->
+            <canvas id="cameraCanvas" style="display: none;"></canvas>
+            
+            <!-- Camera Controls -->
+            <div class="camera-controls">
+                <button type="button" onclick="capturePhoto()" class="btn-capture">
+                    📷 Capture Photo
+                </button>
+                <button type="button" onclick="switchCamera()" class="btn-switch">
+                    🔄 Switch Camera
+                </button>
+                <button type="button" onclick="closeCameraModal()" class="btn-close-cam">
+                    ✖ Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         JavaScript Section
+         ============================================ -->
+    <script>
+        // Global variables for camera
+        let cameraStream = null;
+        let currentFacingMode = 'environment'; // 'environment' = back camera, 'user' = front camera
+
+        /**
+         * Open live camera modal with video stream
+         * Uses getUserMedia API for direct camera access
+         */
+        async function openLiveCamera() {
+            const modal = document.getElementById('cameraModal');
+            const video = document.getElementById('cameraVideo');
+            
+            try {
+                // Show modal
+                modal.style.display = 'flex';
+                
+                // Request camera access with preferred facing mode
+                const constraints = {
+                    video: {
+                        facingMode: currentFacingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                };
+                
+                // Get camera stream
+                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = cameraStream;
+                
+            } catch (error) {
+                console.error('Camera error:', error);
+                alert('❌ Cannot access camera!\n\nMake sure:\n1. Camera permission is allowed\n2. You are using HTTPS or localhost\n3. No other app is using the camera');
+                closeCameraModal();
+            }
+        }
+
+        /**
+         * Switch between front and back camera
+         */
+        async function switchCamera() {
+            // Toggle facing mode
+            currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+            
+            // Stop current stream
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+            }
+            
+            // Restart with new camera
+            await openLiveCamera();
+        }
+
+        /**
+         * Capture photo from live video stream
+         */
+        function capturePhoto() {
+            const video = document.getElementById('cameraVideo');
+            const canvas = document.getElementById('cameraCanvas');
+            const context = canvas.getContext('2d');
+            
+            // Set canvas size to video dimensions
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Draw current video frame to canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Convert canvas to blob for file upload
+            canvas.toBlob(function(blob) {
+                // Create a File object from blob
+                const file = new File([blob], 'garbage_photo_' + Date.now() + '.jpg', { type: 'image/jpeg' });
+                
+                // Create DataTransfer and set file to hidden input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                document.getElementById('cameraInput').files = dataTransfer.files;
+                
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreviewContainer').style.display = 'block';
+                    document.getElementById('imagePreview').src = e.target.result;
+                };
+                reader.readAsDataURL(blob);
+                
+                // Close camera modal
+                closeCameraModal();
+                
+            }, 'image/jpeg', 0.8);  // 80% quality JPEG
+        }
+
+        /**
+         * Close camera modal and stop video stream
+         */
+        function closeCameraModal() {
+            const modal = document.getElementById('cameraModal');
+            const video = document.getElementById('cameraVideo');
+            
+            // Stop all camera tracks
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            
+            // Clear video source
+            video.srcObject = null;
+            
+            // Hide modal
+            modal.style.display = 'none';
+        }
+
+        /**
+         * Open gallery for selecting image from device
+         */
+        function openGallery() {
+            document.getElementById('galleryInput').click();
+        }
+
+        /**
+         * Preview the selected image from gallery
+         * @param {HTMLInputElement} input - The file input element
+         */
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // Show preview container
+                    document.getElementById('imagePreviewContainer').style.display = 'block';
+                    // Set preview image source
+                    document.getElementById('imagePreview').src = e.target.result;
+                    
+                    // Copy file to camera input for form submission
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(input.files[0]);
+                    document.getElementById('cameraInput').files = dataTransfer.files;
+                };
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Add event listener for gallery input
+        document.getElementById('galleryInput').addEventListener('change', function() {
+            previewImage(this);
+        });
+
+        /**
+         * Remove selected image
+         */
+        function removeImage() {
+            document.getElementById('imagePreviewContainer').style.display = 'none';
+            document.getElementById('imagePreview').src = '';
+            document.getElementById('cameraInput').value = '';
+            document.getElementById('galleryInput').value = '';
+        }
+
+        /**
+         * Get current GPS location using HTML5 Geolocation API
+         * Automatically fills latitude and longitude fields
+         */
+        function getLocation() {
+            const locationDisplay = document.getElementById('locationDisplay');
+            
+            // Check if geolocation is supported
+            if (navigator.geolocation) {
+                locationDisplay.innerHTML = '⏳ Getting location...';
+                locationDisplay.className = 'location-display loading';
+                
+                // Request current position
+                navigator.geolocation.getCurrentPosition(
+                    // Success callback
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        // Store coordinates in hidden fields
+                        document.getElementById('latitude').value = lat;
+                        document.getElementById('longitude').value = lng;
+                        
+                        // Display coordinates to user
+                        locationDisplay.innerHTML = `
+                            ✅ Location Captured!<br>
+                            <strong>Latitude:</strong> ${lat.toFixed(6)}<br>
+                            <strong>Longitude:</strong> ${lng.toFixed(6)}
+                        `;
+                        locationDisplay.className = 'location-display success';
+                    },
+                    // Error callback
+                    function(error) {
+                        let errorMessage = '';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = '❌ Location permission denied. Please allow location access.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = '❌ Location information unavailable.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = '❌ Location request timed out.';
+                                break;
+                            default:
+                                errorMessage = '❌ An unknown error occurred.';
+                        }
+                        locationDisplay.innerHTML = errorMessage;
+                        locationDisplay.className = 'location-display error';
+                    },
+                    // Options
+                    {
+                        enableHighAccuracy: true,  // Use GPS if available
+                        timeout: 10000,            // Wait up to 10 seconds
+                        maximumAge: 0              // Don't use cached location
+                    }
+                );
+            } else {
+                locationDisplay.innerHTML = '❌ Geolocation is not supported by this browser.';
+                locationDisplay.className = 'location-display error';
+            }
+        }
+
+        /**
+         * Form validation before submission
+         */
+        document.getElementById('complaintForm').addEventListener('submit', function(e) {
+            const lat = document.getElementById('latitude').value;
+            const lng = document.getElementById('longitude').value;
+            const image = document.getElementById('cameraInput').files[0];
+            
+            // Check if location is captured
+            if (!lat || !lng) {
+                if (!confirm('Location not captured. Do you want to submit without GPS coordinates?')) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+            
+            // Check if image is selected
+            if (!image) {
+                if (!confirm('No image selected. Do you want to submit without an image?')) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+            
+            return true;
+        });
+
+        // Close camera modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeCameraModal();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# ============================================
+# Web Based Smart Waste Management System
+# Python Dependencies
+# ============================================
+# Install all dependencies using:
+# pip install -r requirements.txt
+# ============================================
+
+# Flask - Web framework for Python
+flask==3.0.0
+
+# MySQL Connector - To connect Python with MySQL database
+mysql-connector-python==8.2.0
+
+# Werkzeug - WSGI utility library (comes with Flask)
+werkzeug==3.0.1

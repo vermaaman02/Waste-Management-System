@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--
+    ============================================
+    Municipality Dashboard - Admin Page
+    Web Based Smart Waste Management System
+    ============================================
+    This page displays all garbage complaints and
+    allows municipality staff to update status.
+    ============================================
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Smart Waste Management</title>
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Main Container -->
+    <div class="container admin-container">
+        <!-- Header Section -->
+        <header class="header admin-header">
+            <h1>🏛️ Municipality Dashboard</h1>
+            <p>Smart Waste Management System - Patna Municipal Corporation</p>
+        </header>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Statistics Section -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>📊 Total Complaints</h3>
+                <p class="stat-number">{{ complaints|length }}</p>
+            </div>
+            <div class="stat-card pending">
+                <h3>⏳ Pending</h3>
+                <p class="stat-number">{{ complaints|selectattr('status', 'equalto', 'Pending')|list|length }}</p>
+            </div>
+            <div class="stat-card cleaned">
+                <h3>✅ Cleaned</h3>
+                <p class="stat-number">{{ complaints|selectattr('status', 'equalto', 'Cleaned')|list|length }}</p>
+            </div>
+        </div>
+
+        <!-- Complaints Table Section -->
+        <div class="table-container">
+            <h2>📋 All Complaints</h2>
+            
+            {% if complaints %}
+            <div class="table-responsive">
+                <table class="complaints-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Area</th>
+                            <th>Description</th>
+                            <th>Image</th>
+                            <th>GPS Location</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!--
+                        Jinja2 Loop: Iterate through all complaints
+                        Each complaint is displayed as a table row
+                        -->
+                        {% for complaint in complaints %}
+                        <tr class="{% if complaint.status == 'Cleaned' %}row-cleaned{% else %}row-pending{% endif %}">
+                            <!-- Complaint ID -->
+                            <td class="td-id">{{ complaint.id }}</td>
+                            
+                            <!-- Reporter Name -->
+                            <td class="td-name">{{ complaint.name }}</td>
+                            
+                            <!-- Area/Location -->
+                            <td class="td-area">{{ complaint.area }}</td>
+                            
+                            <!-- Description -->
+                            <td class="td-description">
+                                <div class="description-text">{{ complaint.description }}</div>
+                            </td>
+                            
+                            <!-- Garbage Image -->
+                            <td class="td-image">
+                                {% if complaint.image_path %}
+                                    <img src="{{ url_for('uploaded_file', filename=complaint.image_path) }}" 
+                                         alt="Garbage Image" 
+                                         class="complaint-image"
+                                         onclick="openImageModal(this.src)">
+                                {% else %}
+                                    <span class="no-image">No Image</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- GPS Coordinates -->
+                            <td class="td-location">
+                                {% if complaint.latitude and complaint.longitude %}
+                                    <div class="location-info-admin">
+                                        <strong>Lat:</strong> {{ complaint.latitude }}<br>
+                                        <strong>Lng:</strong> {{ complaint.longitude }}
+                                        <!-- Link to open location in Google Maps -->
+                                        <a href="https://www.google.com/maps?q={{ complaint.latitude }},{{ complaint.longitude }}" 
+                                           target="_blank" 
+                                           class="map-link">
+                                            🗺️ View on Map
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <span class="no-location">Not Available</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Status Badge -->
+                            <td class="td-status">
+                                <span class="status-badge {% if complaint.status == 'Cleaned' %}status-cleaned{% else %}status-pending{% endif %}">
+                                    {{ complaint.status }}
+                                </span>
+                            </td>
+                            
+                            <!-- Action: Update Status -->
+                            <td class="td-action">
+                                <!--
+                                Form to update complaint status
+                                Submits to /update_status route
+                                -->
+                                <form action="{{ url_for('update_status') }}" method="POST" class="status-form">
+                                    <!-- Hidden field containing complaint ID -->
+                                    <input type="hidden" name="id" value="{{ complaint.id }}">
+                                    
+                                    <!-- Status Dropdown -->
+                                    <select name="status" class="status-select" onchange="this.form.submit()">
+                                        <option value="Pending" {% if complaint.status == 'Pending' %}selected{% endif %}>
+                                            ⏳ Pending
+                                        </option>
+                                        <option value="Cleaned" {% if complaint.status == 'Cleaned' %}selected{% endif %}>
+                                            ✅ Cleaned
+                                        </option>
+                                    </select>
+                                    
+                                    <!-- Alternative: Button to update status -->
+                                    <noscript>
+                                        <button type="submit" class="btn-update">Update</button>
+                                    </noscript>
+                                </form>
+                            </td>
+                        </tr>
+                        <!-- End of Jinja2 loop -->
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <!-- Display when no complaints exist -->
+                <div class="no-complaints">
+                    <p>📭 No complaints reported yet.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer admin-footer">
+            <a href="{{ url_for('index') }}" class="btn-back">← Back to Report Page</a>
+            <p>© 2024 Smart Waste Management System - Patna Municipal Corporation</p>
+        </footer>
+    </div>
+
+    <!-- Image Modal for Full-Size View -->
+    <div id="imageModal" class="modal" onclick="closeImageModal()">
+        <span class="modal-close">&times;</span>
+        <img class="modal-content" id="modalImage">
+    </div>
+
+    <!-- ============================================
+         JavaScript Section
+         ============================================ -->
+    <script>
+        /**
+         * Open modal to display full-size image
+         * @param {string} imageSrc - URL of the image to display
+         */
+        function openImageModal(imageSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.style.display = 'block';
+            modalImg.src = imageSrc;
+        }
+
+        /**
+         * Close the image modal
+         */
+        function closeImageModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+
+        /**
+         * Close modal when Escape key is pressed
+         */
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeImageModal();
+            }
+        });
+
+        /**
+         * Auto-refresh page every 30 seconds to show new complaints
+         * (Optional - uncomment to enable)
+         */
+        // setInterval(function() {
+        //     location.reload();
+        // }, 30000);
+
+        /**
+         * Confirm before changing status to Cleaned
+         */
+        document.querySelectorAll('.status-select').forEach(function(select) {
+            select.addEventListener('change', function(e) {
+                if (this.value === 'Cleaned') {
+                    if (!confirm('Mark this complaint as Cleaned?')) {
+                        e.preventDefault();
+                        // Reset to Pending if cancelled
+                        this.value = 'Pending';
+                        return false;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

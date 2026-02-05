@@ -1,0 +1,787 @@
+/*
+============================================
+Web Based Smart Waste Management System
+CSS Stylesheet
+============================================
+BCA Major Project
+Clean and beginner-friendly styling
+============================================
+*/
+
+/* ============================================
+   CSS RESET & BASE STYLES
+   ============================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* ============================================
+   CONTAINER STYLES
+   ============================================ */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.admin-container {
+    max-width: 1200px;
+}
+
+/* ============================================
+   HEADER STYLES
+   ============================================ */
+.header {
+    text-align: center;
+    padding: 30px 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    color: #2c3e50;
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+
+.header p {
+    color: #7f8c8d;
+    font-size: 1rem;
+}
+
+.admin-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+}
+
+.admin-header h1,
+.admin-header p {
+    color: #fff;
+}
+
+/* ============================================
+   ALERT/FLASH MESSAGE STYLES
+   ============================================ */
+.alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* ============================================
+   FORM CONTAINER STYLES
+   ============================================ */
+.form-container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.form-container h2 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.subtitle {
+    color: #7f8c8d;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+/* ============================================
+   FORM GROUP STYLES
+   ============================================ */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.form-group input[type="text"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input[type="text"]:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* ============================================
+   IMAGE UPLOAD STYLES
+   ============================================ */
+.upload-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-upload {
+    flex: 1;
+    min-width: 140px;
+    padding: 15px 20px;
+    border: 2px dashed #667eea;
+    border-radius: 8px;
+    background: #f8f9fa;
+    color: #667eea;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-upload:hover {
+    background: #667eea;
+    color: #fff;
+}
+
+.btn-camera {
+    border-color: #e74c3c;
+    color: #e74c3c;
+}
+
+.btn-camera:hover {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.btn-gallery {
+    border-color: #3498db;
+    color: #3498db;
+}
+
+.btn-gallery:hover {
+    background: #3498db;
+    color: #fff;
+}
+
+/* Image Preview */
+.image-preview-container {
+    margin-bottom: 15px;
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.image-preview-container img {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.btn-remove {
+    padding: 8px 15px;
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* ============================================
+   LOCATION STYLES
+   ============================================ */
+.location-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn-location {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.btn-location:hover {
+    transform: scale(1.02);
+}
+
+.location-display {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+.location-display.success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.location-display.loading {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.location-display.error {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* ============================================
+   SUBMIT BUTTON STYLES
+   ============================================ */
+.btn-submit {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* ============================================
+   FOOTER STYLES
+   ============================================ */
+.footer {
+    text-align: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.footer p {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+.admin-link {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 20px;
+    background: #2c3e50;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+}
+
+.admin-link:hover {
+    background: #34495e;
+}
+
+.admin-footer {
+    margin-top: 20px;
+}
+
+.btn-back {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 10px 20px;
+    background: #667eea;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+}
+
+.btn-back:hover {
+    background: #764ba2;
+}
+
+/* ============================================
+   STATISTICS CARDS STYLES
+   ============================================ */
+.stats-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    flex: 1;
+    min-width: 150px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card h3 {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.stat-card.pending {
+    border-left: 4px solid #f39c12;
+}
+
+.stat-card.pending .stat-number {
+    color: #f39c12;
+}
+
+.stat-card.cleaned {
+    border-left: 4px solid #27ae60;
+}
+
+.stat-card.cleaned .stat-number {
+    color: #27ae60;
+}
+
+/* ============================================
+   TABLE STYLES
+   ============================================ */
+.table-container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.table-container h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.complaints-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.complaints-table th,
+.complaints-table td {
+    padding: 12px 10px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.complaints-table th {
+    background: #2c3e50;
+    color: #fff;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.complaints-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.row-cleaned {
+    background-color: #d4edda !important;
+}
+
+.row-pending {
+    background-color: #fff3cd !important;
+}
+
+/* Table Cell Styles */
+.td-id {
+    font-weight: 600;
+    color: #667eea;
+}
+
+.td-description {
+    max-width: 200px;
+}
+
+.description-text {
+    max-height: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Complaint Image */
+.td-image {
+    width: 80px;
+}
+
+.complaint-image {
+    width: 70px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.complaint-image:hover {
+    transform: scale(1.1);
+}
+
+.no-image {
+    color: #95a5a6;
+    font-style: italic;
+    font-size: 0.8rem;
+}
+
+/* Location Info in Table */
+.location-info-admin {
+    font-size: 0.8rem;
+}
+
+.map-link {
+    display: inline-block;
+    margin-top: 5px;
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.map-link:hover {
+    text-decoration: underline;
+}
+
+.no-location {
+    color: #95a5a6;
+    font-style: italic;
+}
+
+/* Status Badge */
+.status-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-cleaned {
+    background: #d4edda;
+    color: #155724;
+}
+
+/* Status Form */
+.status-form {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-select {
+    padding: 8px 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.btn-update {
+    padding: 8px 12px;
+    background: #667eea;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* No Complaints Message */
+.no-complaints {
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+}
+
+.no-complaints p {
+    font-size: 1.2rem;
+}
+
+/* ============================================
+   IMAGE MODAL STYLES
+   ============================================ */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    cursor: pointer;
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 90%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 10px;
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .header h1 {
+        font-size: 1.4rem;
+    }
+
+    .form-container {
+        padding: 20px;
+    }
+
+    .upload-options {
+        flex-direction: column;
+    }
+
+    .btn-upload {
+        width: 100%;
+    }
+
+    .stats-container {
+        flex-direction: column;
+    }
+
+    .stat-card {
+        width: 100%;
+    }
+
+    .complaints-table {
+        font-size: 0.8rem;
+    }
+
+    .complaints-table th,
+    .complaints-table td {
+        padding: 8px 5px;
+    }
+
+    .complaint-image {
+        width: 50px;
+        height: 35px;
+    }
+
+    .td-description {
+        max-width: 100px;
+    }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+.text-center {
+    text-align: center;
+}
+
+.mt-10 {
+    margin-top: 10px;
+}
+
+.mb-10 {
+    margin-bottom: 10px;
+}
+
+/* ============================================
+   LIVE CAMERA MODAL STYLES
+   ============================================ */
+.camera-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.camera-container {
+    background: #fff;
+    border-radius: 15px;
+    padding: 20px;
+    max-width: 90%;
+    max-height: 90%;
+    text-align: center;
+}
+
+.camera-container h3 {
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.camera-container p {
+    color: #7f8c8d;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+/* Video stream display */
+#cameraVideo {
+    width: 100%;
+    max-width: 640px;
+    max-height: 480px;
+    border-radius: 10px;
+    background: #000;
+    transform: scaleX(1); /* Normal for back camera */
+}
+
+/* Camera control buttons */
+.camera-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.btn-capture {
+    padding: 12px 25px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.btn-capture:hover {
+    transform: scale(1.05);
+}
+
+.btn-switch {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.btn-switch:hover {
+    transform: scale(1.05);
+}
+
+.btn-close-cam {
+    padding: 12px 20px;
+    background: #95a5a6;
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-close-cam:hover {
+    background: #7f8c8d;
+}
+
+/* Responsive camera modal */
+@media (max-width: 768px) {
+    .camera-container {
+        padding: 15px;
+        margin: 10px;
+    }
+
+    #cameraVideo {
+        max-height: 300px;
+    }
+
+    .camera-controls {
+        flex-direction: column;
+    }
+
+    .btn-capture,
+    .btn-switch,
+    .btn-close-cam {
+        width: 100%;
+    }
+}
