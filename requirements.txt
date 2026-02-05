@@ -14,3 +14,6 @@ mysql-connector-python==8.2.0
 
 # Werkzeug - WSGI utility library (comes with Flask)
 werkzeug==3.0.1
+
+# Gunicorn - Production WSGI server for Railway deployment
+gunicorn==21.2.0

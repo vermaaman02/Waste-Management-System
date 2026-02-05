@@ -17,6 +17,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, f
 import mysql.connector  # Library to connect Python with MySQL database
 import os  # For file and folder operations
 from werkzeug.utils import secure_filename  # For secure file uploads
+import time  # For generating unique filenames
 
 # ============================================
 # FLASK APP CONFIGURATION
@@ -40,12 +41,14 @@ if not os.path.exists(UPLOAD_FOLDER):
 # ============================================
 # DATABASE CONFIGURATION
 # ============================================
-# MySQL Workbench connection settings
+# MySQL connection settings - Uses Railway environment variables if available
+# Falls back to local settings for development
 DB_CONFIG = {
-    'host': 'localhost',      # Database server (local machine)
-    'user': 'root',           # MySQL username
-    'password': 'aman',       # MySQL password
-    'database': 'waste_management'  # Database name
+    'host': os.environ.get('MYSQLHOST', 'localhost'),
+    'user': os.environ.get('MYSQLUSER', 'root'),
+    'password': os.environ.get('MYSQLPASSWORD', 'aman'),
+    'database': os.environ.get('MYSQLDATABASE', 'waste_management'),
+    'port': int(os.environ.get('MYSQLPORT', 3306))
 }   
 
 
@@ -61,15 +64,17 @@ def init_database():
     try:
         # First connect without database to create it
         conn = mysql.connector.connect(
-            host='localhost',
-            user='root',
-            password='aman'
+            host=os.environ.get('MYSQLHOST', 'localhost'),
+            user=os.environ.get('MYSQLUSER', 'root'),
+            password=os.environ.get('MYSQLPASSWORD', 'aman'),
+            port=int(os.environ.get('MYSQLPORT', 3306))
         )
         cursor = conn.cursor()
         
-        # Create database if not exists
-        cursor.execute("CREATE DATABASE IF NOT EXISTS waste_management")
-        cursor.execute("USE waste_management")
+        # Create database if not exists (Railway creates DB automatically)
+        db_name = os.environ.get('MYSQLDATABASE', 'waste_management')
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db_name}")
+        cursor.execute(f"USE {db_name}")
         
         # Create complaints table if not exists
         cursor.execute("""
@@ -410,6 +415,9 @@ def uploaded_file(filename):
 # ============================================
 # MAIN ENTRY POINT
 # ============================================
+# Initialize database when module loads (for Railway/Gunicorn)
+init_database()
+
 if __name__ == '__main__':
     """
     Run the Flask development server.
@@ -421,14 +429,13 @@ if __name__ == '__main__':
     print("for Municipal Services")
     print("=" * 50)
     
-    # Initialize database on startup
-    print("Initializing database...")
-    init_database()
+    # Get port from environment variable (Railway sets this)
+    port = int(os.environ.get('PORT', 5000))
     
     print("Server starting...")
-    print("User Page: http://localhost:5000/")
-    print("Admin Dashboard: http://localhost:5000/admin")
-    print("API Endpoint: http://localhost:5000/complaints")
+    print(f"User Page: http://localhost:{port}/")
+    print(f"Admin Dashboard: http://localhost:{port}/admin")
+    print(f"API Endpoint: http://localhost:{port}/complaints")
     print("=" * 50)
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=port)
